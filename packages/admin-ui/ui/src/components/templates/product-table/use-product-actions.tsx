@@ -1,6 +1,6 @@
 import {
   adminInventoryItemsKeys,
-  useAdminDeleteProduct,
+  useAdminDeleteProduct, useAdminGetSession,
   useAdminUpdateProduct,
   useMedusa,
 } from "medusa-react"
@@ -32,6 +32,7 @@ const useProductActions = (product: Product) => {
   const queryClient = useQueryClient()
   const { isFeatureEnabled } = useFeatureFlag()
   const { client } = useMedusa()
+  const { user } = useAdminGetSession()
 
   const handleDelete = async () => {
     const shouldDelete = await dialog({
@@ -111,6 +112,7 @@ const useProductActions = (product: Product) => {
         ) : (
           <PublishIcon size={20} />
         ),
+      disabled: product.status !== "published" && user?.store_id
     },
     {
       label: t("product-table-duplicate", "Duplicate"),

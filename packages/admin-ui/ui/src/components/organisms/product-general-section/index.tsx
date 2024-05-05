@@ -17,6 +17,9 @@ import StatusSelector from "../../molecules/status-selector"
 import Section from "../section"
 import ChannelsModal from "./channels-modal"
 import GeneralModal from "./general-modal"
+import StatusIndicator from "../../fundamentals/status-indicator";
+import React from "react";
+import {useAdminGetSession} from "medusa-react";
 
 type Props = {
   product: Product
@@ -30,6 +33,7 @@ const ProductGeneralSection = ({ product }: Props) => {
     close: closeInfo,
     toggle: toggleInfo,
   } = useToggleState()
+  const {user} = useAdminGetSession()
 
   const {
     state: channelsState,
@@ -74,12 +78,19 @@ const ProductGeneralSection = ({ product }: Props) => {
         actions={actions}
         forceDropdown
         status={
-          <StatusSelector
-            isDraft={product?.status === "draft"}
-            activeState={t("product-general-section-published", "Published")}
-            draftState={t("product-general-section-draft", "Draft")}
-            onChange={() => onStatusChange(product.status)}
-          />
+            user?.store_id && product?.status !== 'published' ? (
+                <StatusIndicator
+                    title={product?.status === "draft" ? t("product-general-section-draft", "Draft")! : t("product-general-section-published", "Published")!}
+                    variant={product?.status === "draft" ? "default" : "active"}
+                />
+                ) : (
+                <StatusSelector
+                    isDraft={product?.status === "draft"}
+                    activeState={t("product-general-section-published", "Published")}
+                    draftState={t("product-general-section-draft", "Draft")}
+                    onChange={() => onStatusChange(product.status)}
+                />
+            )
         }
       >
         <p className="inter-base-regular text-grey-50 mt-2 whitespace-pre-wrap">

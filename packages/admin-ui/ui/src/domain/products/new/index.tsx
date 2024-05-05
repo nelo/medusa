@@ -1,5 +1,5 @@
 import { AdminPostProductsReq, ProductVariant } from "@medusajs/medusa"
-import { useAdminCreateProduct, useMedusa } from "medusa-react"
+import {useAdminCreateProduct, useAdminGetSession, useMedusa} from "medusa-react"
 import { useForm, useWatch } from "react-hook-form"
 import CustomsForm, {
   CustomsFormType,
@@ -67,6 +67,7 @@ const NewProduct = ({ onClose }: Props) => {
   const { mutate } = useAdminCreateProduct()
   const navigate = useNavigate()
   const notification = useNotification()
+  const { user } = useAdminGetSession()
 
   const watchedCustoms = useWatch({
     control: form.control,
@@ -257,15 +258,17 @@ const NewProduct = ({ onClose }: Props) => {
               >
                 {t("new-save-as-draft", "Save as draft")}
               </Button>
-              <Button
-                size="small"
-                variant="primary"
-                type="button"
-                disabled={!isDirty}
-                onClick={onSubmit(true)}
-              >
-                {t("new-publish-product", "Publish product")}
-              </Button>
+              {!user?.store_id && (
+                <Button
+                  size="small"
+                  variant="primary"
+                  type="button"
+                  disabled={!isDirty}
+                  onClick={onSubmit(true)}
+                >
+                  {t("new-publish-product", "Publish product")}
+                </Button>
+              )}
             </div>
           </div>
         </FocusModal.Header>

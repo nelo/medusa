@@ -84,14 +84,16 @@ const Overview = () => {
       case "products":
         return (
           <div className="flex space-x-2">
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={() => openImportModal()}
-            >
-              <UploadIcon size={20} />
-              {t("overview-import-products", "Import Products")}
-            </Button>
+            {user?.store_id && (
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() => openImportModal()}
+              >
+                <UploadIcon size={20} />
+                {t("overview-import-products", "Import Products")}
+              </Button>
+            )}
             <Button
               variant="secondary"
               size="small"
@@ -100,14 +102,16 @@ const Overview = () => {
               <ExportIcon size={20} />
               {t("overview-export-products", "Export Products")}
             </Button>
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={openProductCreate}
-            >
-              <PlusIcon size={20} />
-              {t("overview-new-product", "New Product")}
-            </Button>
+            {user?.store_id && (
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={openProductCreate}
+              >
+                <PlusIcon size={20} />
+                {t("overview-new-product", "New Product")}
+              </Button>
+            )}
           </div>
         )
 
