@@ -2,7 +2,7 @@ import { useMemo, useState } from "react"
 import { Route, Routes, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 
-import { useAdminCreateBatchJob, useAdminGetSession } from "medusa-react"
+import { useAdminCreateBatchJob } from "medusa-react"
 import Spacer from "../../components/atoms/spacer"
 import RouteContainer from "../../components/extensions/route-container"
 import WidgetContainer from "../../components/extensions/widget-container"
@@ -41,7 +41,7 @@ const OrderIndex = () => {
 
   const views = [
     { key: "orders", label: t("orders-header", "Orders") },
-    { key: "drafts", label: t("draft-orders-header", "Drafts") },
+    // { key: "drafts", label: t("draft-orders-header", "Drafts") } // not needed now
   ]
 
   const activeView = "orders"
@@ -87,14 +87,6 @@ const OrderIndex = () => {
     })
 
     closeExportModal()
-  }
-
-  const { user } = useAdminGetSession()
-
-  const VIEWS = ["orders"]
-
-  if (!user?.store_id) {
-    VIEWS.push("drafts")
   }
 
   return (

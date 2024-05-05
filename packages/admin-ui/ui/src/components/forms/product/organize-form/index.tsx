@@ -14,6 +14,7 @@ import {
 import TagInput from "../../../molecules/tag-input"
 import useOrganizeData from "./use-organize-data"
 import { useTranslation } from "react-i18next"
+import {useAdminGetSession} from "medusa-react";
 
 export type OrganizeFormType = {
   type: Option | null
@@ -36,6 +37,8 @@ const OrganizeForm = ({ form }: Props) => {
   } = useOrganizeData()
 
   const { isFeatureEnabled } = useFeatureFlag()
+
+    const { user } = useAdminGetSession()
 
   const typeOptions = productTypeOptions
 
@@ -73,25 +76,27 @@ const OrganizeForm = ({ form }: Props) => {
         {/*    )*/}
         {/*  }}*/}
         {/*/>*/}
-        <Controller
-          name={path("collection")}
-          control={control}
-          render={({ field: { value, onChange } }) => {
-            return (
-              <NextSelect
-                label={t("organize-form-collection-label", "Collection")}
-                onChange={onChange}
-                options={collectionOptions}
-                value={value}
-                placeholder={t(
-                  "organize-form-collection-placeholder",
-                  "Choose a collection"
-                )}
-                isClearable
-              />
-            )
-          }}
-        />
+        {!user?.store_id && (
+          <Controller
+            name={path("collection")}
+            control={control}
+            render={({ field: { value, onChange } }) => {
+              return (
+                <NextSelect
+                  label={t("organize-form-collection-label", "Collection")}
+                  onChange={onChange}
+                  options={collectionOptions}
+                  value={value}
+                  placeholder={t(
+                    "organize-form-collection-placeholder",
+                    "Choose a collection"
+                  )}
+                  isClearable
+                />
+              )
+            }}
+          />
+        )}
       </div>
 
       {isFeatureEnabled(FeatureFlag.PRODUCT_CATEGORIES) ? (

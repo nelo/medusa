@@ -31,14 +31,18 @@ const Overview = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
+  const { user } = useAdminGetSession()
 
   const views = [
-    { key: "products", label: t("overview-products-header", "Products") },
-    {
+    { key: "products", label: t("overview-products-header", "Products") }
+  ]
+
+  if (!user?.store_id) {
+    views.push({
       key: "collections",
       label: t("overview-collections-header", "Collections"),
-    },
-  ]
+    })
+  }
 
   const [activeView, setActiveView] = useState("products")
 
@@ -214,14 +218,6 @@ const Overview = () => {
     })
 
     closeExportModal()
-  }
-
-  const { user } = useAdminGetSession()
-
-  const VIEWS = ["products"]
-
-  if (!user?.store_id) {
-    VIEWS.push("collections")
   }
 
   return (
