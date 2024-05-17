@@ -5,6 +5,20 @@ export const FulfillmentStatusComponent = ({ status }) => {
   const { t } = useTranslation()
 
   switch (status) {
+    case "delivered":
+      return (
+          <StatusDot
+              title={t("templates-delivered", "Delivered")}
+              variant="success"
+          />
+      )
+    case "partially_delivered":
+      return (
+          <StatusDot
+              title={t("templates-partially-delivered", "Partially Delivered")}
+              variant="warning"
+          />
+      )
     case "shipped":
       return (
         <StatusDot
@@ -15,7 +29,7 @@ export const FulfillmentStatusComponent = ({ status }) => {
     case "fulfilled":
       return (
         <StatusDot
-          title={t("templates-fulfilled", "Fulfilled")}
+          title={t("templates-fulfilled", "Created")}
           variant="warning"
         />
       )

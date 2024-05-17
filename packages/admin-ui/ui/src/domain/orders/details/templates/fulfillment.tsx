@@ -1,7 +1,8 @@
 import {
+  adminOrderKeys,
   useAdminCancelClaimFulfillment,
   useAdminCancelFulfillment,
-  useAdminCancelSwapFulfillment,
+  useAdminCancelSwapFulfillment, useMedusa,
 } from "medusa-react"
 import { useTranslation } from "react-i18next"
 import IconBadge from "../../../../components/fundamentals/icon-badge"
@@ -15,6 +16,33 @@ import useStockLocations from "../../../../hooks/use-stock-locations"
 import { getErrorMessage } from "../../../../utils/error-messages"
 import { TrackingLink } from "./tracking-link"
 import { capitalize } from "lodash"
+import {QueryKey, useMutation, useQueryClient} from "@tanstack/react-query";
+
+
+export const useAdminDeliverFulfillment = (orderId: string) => {
+  const { client } = useMedusa()
+  const queryClient = useQueryClient()
+
+  return useMutation(
+    (fulfillmentId: string) =>
+      client.client.request(
+        `POST`,
+        `/admin/orders/${orderId}/fulfillments/${fulfillmentId}/delivery`,
+        undefined,
+        {},
+        {}
+      ),
+    {
+      onSuccess: () => {
+        ;[adminOrderKeys.lists(), adminOrderKeys.detail(orderId)].forEach(
+          (key) => {
+            queryClient.invalidateQueries({ queryKey: key as QueryKey })
+          }
+        )
+      },
+    }
+  )
+}
 
 export const FormattedFulfillment = ({
   setFullfilmentToShip,
@@ -28,6 +56,7 @@ export const FormattedFulfillment = ({
   const cancelFulfillment = useAdminCancelFulfillment(order.id)
   const cancelSwapFulfillment = useAdminCancelSwapFulfillment(order.id)
   const cancelClaimFulfillment = useAdminCancelClaimFulfillment(order.id)
+  const deliverFulfillment = useAdminDeliverFulfillment(order.id)
   const { getLocationNameById } = useStockLocations()
 
   const { fulfillment } = fulfillmentObj
@@ -129,23 +158,79 @@ export const FormattedFulfillment = ({
     }
   }
 
+  const handleDeliverFulfillment = async () => {
+    const { resourceId, resourceType } = getData()
+
+    const shouldDeliver = await dialog({
+      heading: t("templates-deliver-fulfillment-heading", "Mark fulfillment as delivered?"),
+      text: t(
+          "templates-are-you-sure-you-want-to-deliver-the-fulfillment",
+          "Are you sure you want to mark the fulfillment as delivered?"
+      ),
+    })
+
+    if (!shouldDeliver) {
+      return
+    }
+
+    switch (resourceType) {
+      case "order":
+        return deliverFulfillment.mutate(fulfillment.id, {
+          onSuccess: () =>
+              notification(
+                  t("templates-success", "Success"),
+                  t(
+                      "templates-successfully-marked-fulfillment-as-delivered",
+                      "Successfully marked fulfillment as delivered"
+                  ),
+                  "success"
+              ),
+          onError: (err) =>
+              notification(
+                  t("templates-error", "Error"),
+                  getErrorMessage(err),
+                  "error"
+              ),
+        })
+      default:
+        console.log(`Resource type ${resourceType} not supported for delivery`)
+    }
+  }
+
   return (
     <div className="flex w-full justify-between">
       <div className="flex flex-col space-y-1 py-4">
         <div className="text-grey-90">
-          {fulfillment.canceled_at
-            ? t(
-                "templates-fulfillment-has-been-canceled",
-                "Fulfillment has been canceled"
+          { ((): string => {
+            if (fulfillment.canceled_at) {
+              return t(
+                  "templates-fulfillment-has-been-canceled",
+                  "Fulfillment has been canceled"
               )
-            : t(
-                "templates-fulfilled-by-provider",
-                "{{title}} Fulfilled by {{provider}}",
-                {
-                  title: fulfillmentObj.title,
-                  provider: capitalize(fulfillment.provider_id),
-                }
-              )}
+            }
+            if (fulfillment.shipped_at && !fulfillment.delivered_at) {
+              return t(
+                  "templates-shipped-by-provider",
+                  "{{title}} Shipped by {{provider}}",
+                  {
+                    title: fulfillmentObj.title,
+                    provider: capitalize(fulfillment.provider_id),
+                  }
+              )
+            }
+            if (fulfillment.delivered_at) {
+              return t(
+                  "templates-fulfilled-by-provider",
+                  "{{title}} Fulfilled by {{provider}}",
+                  {
+                      title: fulfillmentObj.title,
+                      provider: capitalize(fulfillment.provider_id),
+                  }
+              )
+            }
+            return t("templates-not-shipped", "Not shipped")
+          })()
+          }
         </div>
         <div className="text-grey-50 flex">
           {!fulfillment.shipped_at
@@ -172,19 +257,27 @@ export const FormattedFulfillment = ({
           </div>
         )}
       </div>
-      {!fulfillment.canceled_at && !fulfillment.shipped_at && (
+      {!fulfillment.canceled_at && !fulfillment.delivered_at && (
         <div className="flex items-center space-x-2">
           <Actionables
             actions={[
               {
+                label: t("templates-mark-delivered", "Mark Delivered"),
+                icon: <PackageIcon size={"20"}/>,
+                onClick: () => handleDeliverFulfillment(),
+                disabled: !fulfillment.shipped_at || fulfillment.delivered_at
+              },
+              {
                 label: t("templates-mark-shipped", "Mark Shipped"),
                 icon: <PackageIcon size={"20"} />,
                 onClick: () => setFullfilmentToShip(fulfillment),
+                disabled: fulfillment.shipped_at,
               },
               {
                 label: t("templates-cancel-fulfillment", "Cancel Fulfillment"),
                 icon: <CancelIcon size={"20"} />,
                 onClick: () => handleCancelFulfillment(),
+                disabled: fulfillment.shipped_at,
               },
             ]}
           />
