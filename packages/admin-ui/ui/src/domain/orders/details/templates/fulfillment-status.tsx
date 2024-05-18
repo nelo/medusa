@@ -71,6 +71,20 @@ export const FulfillmentStatusComponent = ({ status }) => {
           variant="warning"
         />
       )
+    case "failed":
+      return (
+          <StatusDot
+              title={t("templates-failed", "Failed")}
+              variant="warning"
+          />
+      )
+    case "missing_information":
+      return (
+          <StatusDot
+              title={t("templates-missing-information", "Missing information")}
+              variant="warning"
+          />
+      )
     default:
       return null
   }
