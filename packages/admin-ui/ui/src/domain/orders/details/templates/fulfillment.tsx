@@ -347,42 +347,41 @@ export const FormattedFulfillment = ({
     <div className="flex w-full justify-between">
       <div className="flex flex-col space-y-1 py-4">
         <div className="text-grey-90">
-          { fulfillmentObj.title }
+          {((): string | undefined => {
+            if (fulfillment.canceled_at) {
+              return t(
+                "templates-fulfillment-has-been-canceled",
+                "Fulfillment has been canceled"
+              )
+            }
 
-          {/*
-          Commenting out fulfillments titles logic because is not clear how to handle titles for failed and missing_information
-          given that we don't have statutes but only timestamped events
-           */}
+            return fulfillmentObj.title
 
-          {/*{((): string => {*/}
-          {/*  if (fulfillment.canceled_at) {*/}
-          {/*    return t(*/}
-          {/*      "templates-fulfillment-has-been-canceled",*/}
-          {/*      "Fulfillment has been canceled"*/}
-          {/*    )*/}
-          {/*  }*/}
-          {/*  if (fulfillment.shipped_at && !fulfillment.delivered_at) {*/}
-          {/*    return t(*/}
-          {/*      "templates-shipped-by-provider",*/}
-          {/*      "{{title}} Shipped by {{provider}}",*/}
-          {/*      {*/}
-          {/*        title: fulfillmentObj.title,*/}
-          {/*        provider: capitalize(fulfillment.provider_id),*/}
-          {/*      }*/}
-          {/*    )*/}
-          {/*  }*/}
-          {/*  if (fulfillment.delivered_at) {*/}
-          {/*    return t(*/}
-          {/*      "templates-fulfilled-by-provider",*/}
-          {/*      "{{title}} Fulfilled by {{provider}}",*/}
-          {/*      {*/}
-          {/*        title: fulfillmentObj.title,*/}
-          {/*        provider: capitalize(fulfillment.provider_id),*/}
-          {/*      }*/}
-          {/*    )*/}
-          {/*  }*/}
-          {/*  return t("templates-not-shipped", "Not shipped")*/}
-          {/*})()}*/}
+            // Commenting out fulfillments titles logic because is not clear how to handle titles for failed and
+            // missing_information given that we don't have statutes but only timestamped events
+
+            // if (fulfillment.shipped_at && !fulfillment.delivered_at) {
+            //   return t(
+            //     "templates-shipped-by-provider",
+            //     "{{title}} Shipped by {{provider}}",
+            //     {
+            //       title: fulfillmentObj.title,
+            //       provider: capitalize(fulfillment.provider_id),
+            //     }
+            //   )
+            // }
+            // if (fulfillment.delivered_at) {
+            //   return t(
+            //     "templates-fulfilled-by-provider",
+            //     "{{title}} Fulfilled by {{provider}}",
+            //     {
+            //       title: fulfillmentObj.title,
+            //       provider: capitalize(fulfillment.provider_id),
+            //     }
+            //   )
+            // }
+            // return t("templates-not-shipped", "Not shipped")
+          })()}
         </div>
         <div className="text-grey-50 flex">
           {!fulfillment.shipped_at
