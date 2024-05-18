@@ -15,6 +15,7 @@ import Input from "../../../../components/molecules/input"
 import Modal from "../../../../components/molecules/modal"
 import useNotification from "../../../../hooks/use-notification"
 import { getErrorMessage } from "../../../../utils/error-messages"
+import DatePicker from "react-datepicker";
 
 type MarkShippedModalProps = {
   orderId: string
@@ -25,7 +26,9 @@ type MarkShippedModalProps = {
 type MarkShippedFormData = {
   tracking_numbers: {
     value: string | undefined
-  }[]
+  }[],
+  estimated_delivery_date: Date | undefined,
+  delivery_code: string | undefined
 }
 
 const MarkShippedModal: React.FC<MarkShippedModalProps> = ({
@@ -36,7 +39,16 @@ const MarkShippedModal: React.FC<MarkShippedModalProps> = ({
   const { t } = useTranslation()
   const { control, watch, handleSubmit } = useForm<MarkShippedFormData>({
     defaultValues: {
-      tracking_numbers: [{ value: "" }],
+      tracking_numbers:
+        fulfillment.tracking_links.length > 0
+          ? fulfillment.tracking_links.map((tn) => ({
+              value: tn.tracking_number,
+            }))
+          : [{ value: "" }],
+      // @ts-ignore
+      estimated_delivery_date: fulfillment.estimated_delivery_date,
+      // @ts-ignore
+      delivery_code: fulfillment.delivery_code,
     },
     shouldUnregister: true,
   })
@@ -71,6 +83,8 @@ const MarkShippedModal: React.FC<MarkShippedModalProps> = ({
   const notification = useNotification()
 
   const onSubmit = (data: MarkShippedFormData) => {
+    console.log("data", data)
+
     const resourceId =
       fulfillment.claim_order_id || fulfillment.swap_id || fulfillment.order_id
     const [type] = resourceId.split("_")
@@ -122,6 +136,8 @@ const MarkShippedModal: React.FC<MarkShippedModalProps> = ({
           fulfillment_id: fulfillment.id,
           tracking_numbers,
           no_notification: noNotis,
+          estimated_delivery_date: data.estimated_delivery_date,
+          delivery_code: data.delivery_code
         }
         break
     }
@@ -212,6 +228,46 @@ const MarkShippedModal: React.FC<MarkShippedModalProps> = ({
                   "+ Add Additional Tracking Number"
                 )}
               </Button>
+            </div>
+            <div className="flex flex-col space-y-2 mt-2">
+              <Controller
+                name="estimated_delivery_date"
+                control={control}
+                defaultValue={undefined}
+                render={({ field }) => (
+                  <DatePicker
+                    dateFormat="yyyy/MM/dd"
+                    selected={field.value}
+                    onChange={(date) => field.onChange(date)}
+                    customInput={
+                      <Input
+                        label={t(
+                          "mark-shipped-estimated-delivery-date-label",
+                          "Estimated delivery date"
+                        )}
+                        type="text"
+                      />
+                    }
+                  />
+                )}
+              />
+            </div>
+            <div className="flex flex-col space-y-2 mt-2">
+              <Controller
+                  name="delivery_code"
+                  control={control}
+                  defaultValue={undefined}
+                  render={({ field }) => {
+                    return (
+                        <Input
+                            label={t("mark-shipped-delivery-code-label", "Delivery code")}
+                            type="text"
+                            placeholder={"1234"}
+                            {...field}
+                        />
+                    )
+                  }}
+              />
             </div>
           </Modal.Content>
           <Modal.Footer>
