@@ -387,7 +387,7 @@ const OrderDetails = () => {
                       <div className="inter-smaller-regular text-grey-50 mb-1">
                         {t("details-phone", "Phone")}
                       </div>
-                      <div>{order.shipping_address?.phone || "N/A"}</div>
+                      <div>{order.shipping_address?.phone || order.customer.phone || "N/A"}</div>
                     </div>
                     <div className="flex flex-col pl-6">
                       <div className="inter-smaller-regular text-grey-50 mb-1">
