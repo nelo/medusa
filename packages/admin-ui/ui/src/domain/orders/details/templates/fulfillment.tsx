@@ -9,6 +9,7 @@ import IconBadge from "../../../../components/fundamentals/icon-badge"
 import BuildingsIcon from "../../../../components/fundamentals/icons/buildings-icon"
 import CancelIcon from "../../../../components/fundamentals/icons/cancel-icon"
 import PackageIcon from "../../../../components/fundamentals/icons/package-icon"
+import DownloadIcon from "../../../../components/fundamentals/icons/download-icon"
 import Actionables from "../../../../components/molecules/actionables"
 import useImperativeDialog from "../../../../hooks/use-imperative-dialog"
 import useNotification from "../../../../hooks/use-notification"
@@ -16,8 +17,11 @@ import useStockLocations from "../../../../hooks/use-stock-locations"
 import { getErrorMessage } from "../../../../utils/error-messages"
 import { TrackingLink } from "./tracking-link"
 import { capitalize } from "lodash"
-import {QueryKey, useMutation, useQueryClient} from "@tanstack/react-query";
+import {QueryKey, useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import moment from "moment/moment";
+import Button from "../../../../components/fundamentals/button";
+import clsx from "clsx";
+import React from "react";
 
 
 export const useAdminDeliverFulfillment = (orderId: string) => {
@@ -95,6 +99,22 @@ export const useAdminMissingInformationFulfillment = (orderId: string) => {
   )
 }
 
+export const useGetFulfillmentLabel = (orderId: string, fulfillmentId: string) => {
+    const { client } = useMedusa()
+    const { data } = useQuery(
+        ['fulfillmentLabel', orderId, fulfillmentId], // Unique key for the query cache
+        () =>
+        client.client.request(
+            `GET`,
+            `/admin/orders/${orderId}/fulfillments/${fulfillmentId}/label`,
+            undefined,
+            {},
+            {}
+        )
+    )
+    return data
+}
+
 export const FormattedFulfillment = ({
   setFullfilmentToShip,
   order,
@@ -114,6 +134,8 @@ export const FormattedFulfillment = ({
 
   const { fulfillment } = fulfillmentObj
   const hasLinks = !!fulfillment.tracking_links?.length
+
+  const fulfillmentLabel =  useGetFulfillmentLabel(order.id, fulfillment.id)
 
   const getData = () => {
     switch (true) {
@@ -328,6 +350,22 @@ export const FormattedFulfillment = ({
     }
   }
 
+  const handleDownloadLabel = async () => {
+    if (fulfillmentLabel && fulfillmentLabel.base64Pdf) {
+      // Decode the base64 string to binary data
+      const base64Response = await fetch(`data:application/pdf;base64,${fulfillmentLabel.base64Pdf}`);
+      const blob = await base64Response.blob();  // Convert to a blob
+
+      // Create a URL for the blob object
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Open the PDF in a new tab
+      window.open(blobUrl, '_blank');
+    } else {
+      console.log('No fulfillment label data found.');
+    }
+  }
+
   const fulfillmentStatuses: { status: string, at: Date | null }[] = [
     {status: "created", at: fulfillment.created_at ? new Date(fulfillment.created_at) : null},
     {status: "canceled", at: fulfillment.canceled_at ? new Date(fulfillment.canceled_at) : null},
@@ -420,44 +458,71 @@ export const FormattedFulfillment = ({
           </div>
         )}
       </div>
-      {/* only show actions when fulfillment is either not canceled or not delivered */}
-      {!fulfillment.canceled_at && !fulfillment.delivered_at && (
-        <div className="flex items-center space-x-2">
-          <Actionables
-            actions={[
-              {
-                label: t("templates-mark-shipped", "Mark Shipped / Edit shipment"),
-                icon: <PackageIcon size={"20"} />,
-                onClick: () => setFullfilmentToShip(fulfillment),
-              },
-              {
-                label: t("templates-mark-missing-information", "Mark missing information"),
-                icon: <PackageIcon size={"20"} />,
-                onClick: () => handleMissingInformationFulfillment(),
-                disabled: currentStatus === "missing_information" || currentStatus === "created",
-              },
-              {
-                label: t("templates-mark-delivered", "Mark Delivered"),
-                icon: <PackageIcon size={"20"} />,
-                onClick: () => handleDeliverFulfillment(),
-                disabled: currentStatus === "created",
-              },
-              {
-                label: t("templates-mark-failed", "Mark failed"),
-                icon: <PackageIcon size={"20"} />,
-                onClick: () => handleFailFulfillment(),
-                disabled: currentStatus === "failed" || currentStatus === "created",
-              },
-              {
-                label: t("templates-cancel-fulfillment", "Cancel Fulfillment"),
-                icon: <CancelIcon size={"20"} />,
-                onClick: () => handleCancelFulfillment(),
-                disabled: currentStatus !== "created"
-              },
-            ]}
-          />
-        </div>
-      )}
+      <div className="flex items-center">
+        {/* Print label btn */}
+        {!fulfillment.canceled_at && fulfillmentLabel && fulfillmentLabel.base64Pdf && (
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="small"
+              className={clsx("flex w-full justify-start")}
+              onClick={() => handleDownloadLabel()}
+            >
+              <DownloadIcon size={"20"} />
+            </Button>
+          </div>
+        )}
+        {/* only show actions when fulfillment is either not canceled or not delivered */}
+        {!fulfillment.canceled_at && !fulfillment.delivered_at && (
+          <div className="flex items-center space-x-2">
+            <Actionables
+              actions={[
+                {
+                  label: t(
+                    "templates-mark-shipped",
+                    "Mark Shipped / Edit shipment"
+                  ),
+                  icon: <PackageIcon size={"20"} />,
+                  onClick: () => setFullfilmentToShip(fulfillment),
+                },
+                {
+                  label: t(
+                    "templates-mark-missing-information",
+                    "Mark missing information"
+                  ),
+                  icon: <PackageIcon size={"20"} />,
+                  onClick: () => handleMissingInformationFulfillment(),
+                  disabled:
+                    currentStatus === "missing_information" ||
+                    currentStatus === "created",
+                },
+                {
+                  label: t("templates-mark-delivered", "Mark Delivered"),
+                  icon: <PackageIcon size={"20"} />,
+                  onClick: () => handleDeliverFulfillment(),
+                  disabled: currentStatus === "created",
+                },
+                {
+                  label: t("templates-mark-failed", "Mark failed"),
+                  icon: <PackageIcon size={"20"} />,
+                  onClick: () => handleFailFulfillment(),
+                  disabled:
+                    currentStatus === "failed" || currentStatus === "created",
+                },
+                {
+                  label: t(
+                    "templates-cancel-fulfillment",
+                    "Cancel Fulfillment"
+                  ),
+                  icon: <CancelIcon size={"20"} />,
+                  onClick: () => handleCancelFulfillment(),
+                  disabled: currentStatus !== "created",
+                },
+              ]}
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
