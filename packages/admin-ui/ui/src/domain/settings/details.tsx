@@ -14,6 +14,7 @@ type AccountDetailsFormData = {
   swap_link_template: string | undefined
   payment_link_template: string | undefined
   invite_link_template: string | undefined
+  metadata: Record<string, unknown> | undefined
 }
 
 const AccountDetails = () => {
@@ -65,7 +66,15 @@ const AccountDetails = () => {
       return
     }
 
-    mutate(data, {
+    const inputData = {
+      ...data,
+      metadata: {
+        ...store.metadata,
+        ...data.metadata,
+      }
+    }
+
+    mutate(inputData, {
       onSuccess: () => {
         notification(
           t("settings-success", "Success"),
@@ -119,39 +128,75 @@ const AccountDetails = () => {
                 {t("settings-general", "General")}
               </h2>
               <Input
-                label={t("settings-store-name", "Store name")}
-                {...register("name")}
-                placeholder={t("settings-medusa-store", "Medusa Store")}
+                  label={t("settings-store-name", "Store name")}
+                  {...register("name")}
+                  placeholder={t("settings-medusa-store", "Medusa Store")}
+              />
+              <Input className="mt-2"
+                     label={t("settings-store-stock-location-address", "Stock location address")}
+                     {...register("metadata.stock_location_address")}
+                     placeholder={"MEANDRO 39, Atlanta, Cuautitlán Izcalli, 54740 Estado de Mexico"}
+              />
+              <Input className="mt-2"
+                     label={t("settings-store-stock-location-zipcode", "Stock location zipcode")}
+                     {...register("metadata.stock_location_zipcode")}
+                     placeholder={"54740"}
+              />
+              <Input className="mt-2"
+                     label={t("settings-store-stock-location-reference", "Stock location reference")}
+                     {...register("metadata.stock_location_reference")}
+                     placeholder={"casa color negro, frente a la escuela"}
+              />
+              <Input className="mt-2"
+                     label={t("settings-store-stock-location-contact-first-name", "Stock location contact first name")}
+                     {...register("metadata.stock_location_contact_first_name")}
+                     placeholder={"Alberto"}
+              />
+              <Input className="mt-2"
+                     label={t("settings-store-stock-location-contact-last-name", "Stock location contact last name")}
+                     {...register("metadata.stock_location_contact_last_name")}
+                     placeholder={"Jiménez"}
+              />
+              <Input className="mt-2"
+                     label={t("settings-store-stock-location-contact-phone", "Stock location contact phone")}
+                     {...register("metadata.stock_location_contact_phone")}
+                     placeholder={"+525530950987"}
+              />
+              <Input className="mt-2"
+                     label={t("settings-store-stock-location-contact-email", "Stock location contact email")}
+                     {...register("metadata.stock_location_contact_email")}
+                     placeholder={"test@nelo.co"}
               />
             </div>
-            <div>
-              <h2 className="inter-base-semibold mb-base">
-                {t("settings-advanced-settings", "Advanced settings")}
-              </h2>
-              <Input
-                label={t("settings-swap-link-template", "Swap link template")}
-                {...register("swap_link_template")}
-                placeholder="https://acme.inc/swap={swap_id}"
-              />
-              <Input
-                className="mt-base"
-                label={t(
-                  "settings-draft-order-link-template",
-                  "Draft order link template"
-                )}
-                {...register("payment_link_template")}
-                placeholder="https://acme.inc/payment={payment_id}"
-              />
-              <Input
-                className="mt-base"
-                label={t(
-                  "settings-invite-link-template",
-                  "Invite link template"
-                )}
-                {...register("invite_link_template")}
-                placeholder="https://acme-admin.inc/invite?token={invite_token}"
-              />
-            </div>
+            {/* ADVANCED SETTINGS: we don't need them right now */}
+            {/*<div>*/}
+            {/*  <h2 className="inter-base-semibold mb-base">*/}
+            {/*    {t("settings-advanced-settings", "Advanced settings")}*/}
+            {/*  </h2>*/}
+            {/*  <Input*/}
+            {/*    label={t("settings-swap-link-template", "Swap link template")}*/}
+            {/*    {...register("swap_link_template")}*/}
+            {/*    placeholder="https://acme.inc/swap={swap_id}"*/}
+            {/*  />*/}
+            {/*  <Input*/}
+            {/*    className="mt-base"*/}
+            {/*    label={t(*/}
+            {/*      "settings-draft-order-link-template",*/}
+            {/*      "Draft order link template"*/}
+            {/*    )}*/}
+            {/*    {...register("payment_link_template")}*/}
+            {/*    placeholder="https://acme.inc/payment={payment_id}"*/}
+            {/*  />*/}
+            {/*  <Input*/}
+            {/*    className="mt-base"*/}
+            {/*    label={t(*/}
+            {/*      "settings-invite-link-template",*/}
+            {/*      "Invite link template"*/}
+            {/*    )}*/}
+            {/*    {...register("invite_link_template")}*/}
+            {/*    placeholder="https://acme-admin.inc/invite?token={invite_token}"*/}
+            {/*  />*/}
+            {/*</div>*/}
           </div>
         </BodyCard>
       </div>
@@ -178,6 +223,7 @@ const mapStoreDetails = (store: Store): AccountDetailsFormData => {
     swap_link_template: store.swap_link_template,
     payment_link_template: store.payment_link_template,
     invite_link_template: store.invite_link_template,
+    metadata: store.metadata
   }
 }
 
