@@ -6,9 +6,9 @@ import {
   PrimaryKey,
   Property,
 } from "@mikro-orm/core"
+import { Searchable } from "../decorators/searchable"
 
 // Circular dependency one level
-
 @Entity()
 class RecursiveEntity1 {
   constructor(props: { id: string; deleted_at: Date | null }) {
@@ -280,6 +280,60 @@ class Entity2WithUnDecoratedProp {
   entity1: Entity1WithUnDecoratedProp
 }
 
+// Searchable fields
+
+@Entity()
+class SearchableEntity1 {
+  constructor(props: { id: string; deleted_at: Date | null }) {
+    this.id = props.id
+    this.deleted_at = props.deleted_at
+  }
+
+  @PrimaryKey()
+  id: string
+
+  @Property()
+  deleted_at: Date | null
+
+  @Searchable()
+  @Property()
+  searchableField: string
+
+  @Searchable()
+  @OneToMany(() => SearchableEntity2, (entity2) => entity2.entity1)
+  entity2 = new Collection<SearchableEntity2>(this)
+}
+
+@Entity()
+class SearchableEntity2 {
+  constructor(props: {
+    id: string
+    deleted_at: Date | null
+    entity1: SearchableEntity1
+  }) {
+    this.id = props.id
+    this.deleted_at = props.deleted_at
+    this.entity1 = props.entity1
+    this.entity1_id = props.entity1.id
+  }
+
+  @PrimaryKey()
+  id: string
+
+  @Property()
+  deleted_at: Date | null
+
+  @Searchable()
+  @Property()
+  searchableField: string
+
+  @ManyToOne(() => SearchableEntity1, { mapToPk: true })
+  entity1_id: string
+
+  @ManyToOne(() => SearchableEntity1, { persist: false })
+  entity1: SearchableEntity1
+}
+
 export {
   RecursiveEntity1,
   RecursiveEntity2,
@@ -292,4 +346,6 @@ export {
   InternalCircularDependencyEntity1,
   Entity1WithUnDecoratedProp,
   Entity2WithUnDecoratedProp,
+  SearchableEntity1,
+  SearchableEntity2,
 }

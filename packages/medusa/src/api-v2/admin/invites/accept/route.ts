@@ -5,17 +5,17 @@ import {
   AuthenticatedMedusaRequest,
   MedusaResponse,
 } from "../../../../types/routing"
-import { AdminPostInvitesInviteAcceptReq } from "../validators"
+import { AdminInviteAcceptType } from "../validators"
 
 export const POST = async (
-  req: AuthenticatedMedusaRequest<AdminPostInvitesInviteAcceptReq>,
+  req: AuthenticatedMedusaRequest<AdminInviteAcceptType>,
   res: MedusaResponse
 ) => {
   if (req.auth.actor_id) {
     const moduleService: IUserModuleService = req.scope.resolve(
       ModuleRegistrationName.USER
     )
-    const user = moduleService.retrieve(req.auth.actor_id)
+    const user = await moduleService.retrieve(req.auth.actor_id)
     res.status(200).json({ user })
     return
   }
@@ -27,6 +27,7 @@ export const POST = async (
   } as InviteWorkflow.AcceptInviteWorkflowInputDTO
 
   let users
+
   try {
     const { result } = await acceptInviteWorkflow(req.scope).run({ input })
     users = result
