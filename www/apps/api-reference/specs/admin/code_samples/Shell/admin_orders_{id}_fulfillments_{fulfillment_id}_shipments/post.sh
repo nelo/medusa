@@ -4,8 +4,8 @@ curl -X POST '{backend_url}/admin/orders/{id}/fulfillments/{fulfillment_id}/ship
 --data-raw '{
   "items": [
     {
-      "id": "id_uHIzYcTxCHG",
-      "quantity": 3083340957614080
+      "id": "id_fC1xCIvQu8FfLE3S8zyY",
+      "quantity": 1614723084713984
     }
   ],
   "metadata": {}
