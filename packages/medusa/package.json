@@ -1,16 +1,17 @@
 {
-  "name": "@medusajs/medusa",
-  "version": "1.20.7",
+  "name": "@nelo/medusa",
+  "version": "1.20.7-patch.2",
   "description": "Building blocks for digital commerce",
   "main": "dist/index.js",
   "bin": "./cli.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/medusajs/medusa",
+    "url": "https://github.com/nelo/medusa",
     "directory": "packages/medusa"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   },
   "files": [
     "dist",
