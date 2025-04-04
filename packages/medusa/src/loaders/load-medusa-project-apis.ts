@@ -146,6 +146,7 @@ async function registerApi(
         err.stack ? EOL + err.stack : ""
       }`
     )
+    throw err
   }
 
   return app
