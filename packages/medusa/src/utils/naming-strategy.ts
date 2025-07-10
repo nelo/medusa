@@ -3,7 +3,7 @@
 // the output build
 import { DefaultNamingStrategy } from "typeorm"
 
-DefaultNamingStrategy.prototype.eagerJoinRelationAlias = function (
+;(DefaultNamingStrategy.prototype as any).eagerJoinRelationAlias = function (
   alias: string,
   propertyPath: string
 ): string {

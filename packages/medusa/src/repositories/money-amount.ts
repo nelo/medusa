@@ -64,7 +64,7 @@ export const MoneyAmountRepository = dataSource
             } => !!d.variant
           )
           .map((d) => ({
-            variant_id: d.variant.id,
+            variant_id: typeof d.variant.id === 'function' ? d.variant.id() : d.variant.id,
             money_amount_id: d.id,
           }))
       )

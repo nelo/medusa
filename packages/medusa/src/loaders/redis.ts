@@ -16,7 +16,7 @@ async function redisLoader({
   configModule,
   logger,
 }: Options): Promise<{ shutdown: () => Promise<void> }> {
-  let client!: Redis | FakeRedis
+  let client!: Redis | typeof FakeRedis.prototype
 
   if (configModule.projectConfig.redis_url) {
     client = new Redis(configModule.projectConfig.redis_url, {

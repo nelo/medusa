@@ -45,6 +45,9 @@ export default async ({
   const extra: any = configModule.projectConfig.database_extra || {}
   const schema = configModule.projectConfig.database_schema || "public"
 
+  // @ts-ignore
+  const migrationsTransactionMode = configModule.projectConfig.migrations_transaction_mode
+
   dataSource = new DataSource({
     type: "postgres",
     url: connectionString,
@@ -56,6 +59,7 @@ export default async ({
     logging:
       customOptions?.logging ??
       (configModule.projectConfig.database_logging || false),
+    migrationsTransactionMode
   } as DataSourceOptions)
 
   await dataSource.initialize().catch(handlePostgresDatabaseError)
